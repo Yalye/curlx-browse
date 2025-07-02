@@ -10,3 +10,7 @@ int _curl_easy_setopt(void* curl, int option, void* parameter) {
     }
     return (int)curl_easy_setopt(curl, (CURLoption)option, parameter);
 }
+
+int add(int a, int b) {
+    return a + b;
+}

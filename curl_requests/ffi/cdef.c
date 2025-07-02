@@ -74,3 +74,5 @@ int curl_mime_type(void *field, char *type);
 int curl_mime_filename(void *field, char *filename);
 int curl_mime_filedata(void *field, char *filename);
 void curl_mime_free(void *form);
+
+int add(int a, int b);
