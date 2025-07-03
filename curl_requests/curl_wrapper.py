@@ -127,35 +127,14 @@ ffi.set_source(
     extra_link_args=(["-lstdc++"] if system != "Windows" else []),
 )
 
-# 定义 libcurl 的 C 接口
 root_dir = Path(__file__).parent
 with open(root_dir / "ffi/cdef.c") as f:
     cdef_content = f.read()
     ffi.cdef(cdef_content)
 
-# 加载 libcurl 库
-# libcurl = ffi.dlopen(r"C:\Users\admin\Downloads\vcpkg-master\packages\curl_x64-windows\bin\libcurl.dll")  # 或者 "libcurl.dylib" 或 "libcurl.dll"
-
-
-#
-# class CurlWrapper:
-#     def __init__(self):
-#         self.handle = libcurl.curl_easy_init()
-#
-#     def __del__(self):
-#         if self.handle:
-#             libcurl.curl_easy_cleanup(self.handle)
-#
-#     def set_option(self, option, value):
-#         libcurl.curl_easy_setopt(self.handle, option, value)
-#
-#     def perform(self):
-#         return libcurl.curl_easy_perform(self.handle)
-
-# 定义回调函数
 def write_callback_function(ptr, size, nmemb, userdata):
-    data = ffi.buffer(ptr, size * nmemb)  # 获取返回数据
-    print(f"Received data: {data[:100]}...")  # 打印前 100 字节
+    data = ffi.buffer(ptr, size * nmemb)
+    print(f"Received data: {data[:100]}...")
     return size * nmemb
 
 if __name__ == "__main__":
