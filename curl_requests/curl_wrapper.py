@@ -30,9 +30,6 @@ class CurlWrapper:
         self.setopt(curl, lib.CURLOPT_SSL_VERIFYHOST, 0)
         self.setopt(curl, lib.CURLOPT_SSL_VERIFYPEER, 0)
 
-        # lib._curl_easy_setopt(curl, lib.CURLOPT_SSL_VERIFYPEER, 0)
-        # lib._curl_easy_setopt(curl, lib.CURLOPT_SSL_VERIFYHOST, 0)
-
         # Headers
         header_list = ffi.NULL
         if headers:
