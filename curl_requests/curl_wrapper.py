@@ -1,141 +1,69 @@
-from pathlib import Path
-import os
-import json
-import platform
-import struct
-import tempfile
-from glob import glob
-from pathlib import Path
-from urllib.request import urlretrieve
-from cffi import FFI
+from curl_requests._wrapper import lib, ffi
 
-system = platform.system()
+### test 1
+result = lib.add(2,3)
+print(result)
 
-def detect_arch():
-    with open(Path(__file__).parent / "libs.json") as f:
-        archs = json.loads(f.read())
+class CurlWrapper:
 
-    uname = platform.uname()
-    glibc_flavor = "gnueabihf" if uname.machine in ["armv7l", "armv6l"] else "gnu"
+    def setopt(self, curl, option, value):
+        if isinstance(value, str):
+            val = ffi.new("char[]", value.encode())
+        elif isinstance(value, bytes):
+            val = ffi.new("char[]", value)
+        elif isinstance(value, int):
+            val = ffi.new("long *", value)
+        elif value is None:
+            val = ffi.NULL
+        else:
+            val = value  # assume already cdata
+        lib._curl_easy_setopt(curl, option, val)
 
-    libc, _ = platform.libc_ver()
-    # https://github.com/python/cpython/issues/87414
-    libc = glibc_flavor if libc == "glibc" else "musl"
-    pointer_size = struct.calcsize("P") * 8
+    def perform_request(self, method, url, headers=None, data=None, timeout=30):
+        curl = lib.curl_easy_init()
+        if curl == ffi.NULL:
+            raise RuntimeError("Failed to init curl")
 
-    for arch in archs:
-        if (
-            arch["system"] == uname.system
-            and arch["machine"] == uname.machine
-            and arch["pointer_size"] == pointer_size
-            and ("libc" not in arch or arch.get("libc") == libc)
-        ):
-            if arch["libdir"]:
-                arch["libdir"] = os.path.expanduser(arch["libdir"])
+        lib._curl_easy_setopt(curl, lib.CURLOPT_URL, ffi.new("char[]", url.encode()))
+        lib._curl_easy_setopt(curl, lib.CURLOPT_CUSTOMREQUEST, ffi.new("char[]", method.encode()))
+
+        self.setopt(curl, lib.CURLOPT_SSL_VERIFYHOST, 0)
+        self.setopt(curl, lib.CURLOPT_SSL_VERIFYPEER, 0)
+
+        # lib._curl_easy_setopt(curl, lib.CURLOPT_SSL_VERIFYPEER, 0)
+        # lib._curl_easy_setopt(curl, lib.CURLOPT_SSL_VERIFYHOST, 0)
+
+        # Headers
+        header_list = ffi.NULL
+        if headers:
+            for k, v in headers.items():
+                hdr = f"{k}: {v}".encode()
+                header_list = lib.curl_slist_append(header_list, ffi.new("char[]", hdr))
+            lib._curl_easy_setopt(curl, lib.CURLOPT_HTTPHEADER, header_list)
+
+        # POST data
+        if method == "POST" and data:
+            if isinstance(data, dict):
+                from urllib.parse import urlencode
+                post_data = urlencode(data).encode()
             else:
-                global tmpdir
-                if "CI" in os.environ:
-                    tmpdir = "./tmplibdir"
-                    os.makedirs(tmpdir, exist_ok=True)
-                    arch["libdir"] = tmpdir
-                else:
-                    tmpdir = tempfile.TemporaryDirectory()
-                    arch["libdir"] = tmpdir.name
-            return arch
-    raise Exception(f"Unsupported arch: {uname}")
+                post_data = data.encode() if isinstance(data, str) else data
+            lib._curl_easy_setopt(curl, lib.CURLOPT_POSTFIELDS, ffi.new("char[]", post_data))
 
+        # Write callback
+        buf = []
+        @ffi.callback("size_t(char *, size_t, size_t, void *)")
+        def write_cb(ptr, size, nmemb, userdata):
+            content = ffi.string(ptr, size * nmemb)
+            buf.append(content)
+            return size * nmemb
 
-arch = detect_arch()
-print(f"Using {arch['libdir']} to store libcurl-impersonate")
+        lib._curl_easy_setopt(curl, lib.CURLOPT_WRITEFUNCTION, write_cb)
 
+        # Perform
+        res = lib.curl_easy_perform(curl)
+        if res != 0:
+            raise RuntimeError(f"curl failed with code {res}")
 
-def get_curl_libraries():
-    if arch["system"] == "Windows":
-        return [
-            "Crypt32",
-            "Secur32",
-            "wldap32",
-            "Normaliz",
-            "libcurl",
-            "zstd",
-            "zlib",
-            "ssl",
-            "nghttp2",
-            "nghttp3",
-            "ngtcp2",
-            "ngtcp2_crypto_boringssl",
-            "crypto",
-            "brotlienc",
-            "brotlidec",
-            "brotlicommon",
-        ]
-    elif arch["system"] == "Darwin" or (
-        arch["system"] == "Linux" and arch.get("link_type") == "dynamic"
-    ):
-        return ["curl-impersonate"]
-    else:
-        return []
-
-def get_curl_archives():
-    print("Files for linking")
-    print(os.listdir(arch["libdir"]))
-    if arch["system"] == "Linux" and arch.get("link_type") == "static":
-        # note that the order of libraries matters
-        # https://stackoverflow.com/a/36581865
-        return [
-            f"{arch['libdir']}/libcurl-impersonate.a",
-            f"{arch['libdir']}/libssl.a",
-            f"{arch['libdir']}/libcrypto.a",
-            f"{arch['libdir']}/libz.a",
-            f"{arch['libdir']}/libzstd.a",
-            f"{arch['libdir']}/libnghttp2.a",
-            f"{arch['libdir']}/libngtcp2.a",
-            f"{arch['libdir']}/libngtcp2_crypto_boringssl.a",
-            f"{arch['libdir']}/libnghttp3.a",
-            f"{arch['libdir']}/libbrotlidec.a",
-            f"{arch['libdir']}/libbrotlienc.a",
-            f"{arch['libdir']}/libbrotlicommon.a",
-        ]
-    else:
-        return []
-
-
-ffi = FFI()
-root_dir = Path(__file__).parent
-
-ffi.set_source(
-    "curl_requests._wrapper",
-    """
-        #include "easy_set.h"
-    """,
-    # FIXME from `curl-impersonate`
-    libraries=get_curl_libraries(),
-    extra_objects=get_curl_archives(),
-    library_dirs=[arch["libdir"]],
-    source_extension=".c",
-    include_dirs=[
-        str(root_dir / "include"),
-        str(root_dir / "lib64/include"),
-        str(root_dir / "ffi"),
-    ],
-    sources=[
-        str(root_dir / "ffi/easy_set.c"),
-    ],
-    extra_compile_args=(
-        ["-Wno-implicit-function-declaration"] if system == "Darwin" else []
-    ),
-    extra_link_args=(["-lstdc++"] if system != "Windows" else []),
-)
-
-root_dir = Path(__file__).parent
-with open(root_dir / "ffi/cdef.c") as f:
-    cdef_content = f.read()
-    ffi.cdef(cdef_content)
-
-def write_callback_function(ptr, size, nmemb, userdata):
-    data = ffi.buffer(ptr, size * nmemb)
-    print(f"Received data: {data[:100]}...")
-    return size * nmemb
-
-if __name__ == "__main__":
-    ffi.compile(verbose=False)
+        lib.curl_easy_cleanup(curl)
+        return b"".join(buf)

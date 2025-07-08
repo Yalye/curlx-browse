@@ -75,4 +75,18 @@ int curl_mime_filename(void *field, char *filename);
 int curl_mime_filedata(void *field, char *filename);
 void curl_mime_free(void *form);
 
+#define CURLOPT_URL 10002
+#define CURLOPT_HTTPHEADER 10023
+#define CURLOPT_POSTFIELDS 10015
+#define CURLOPT_WRITEFUNCTION 20011
+#define CURLOPT_HEADERFUNCTION 20079
+#define CURLOPT_TIMEOUT 13
+#define CURLOPT_POST 47
+#define CURLOPT_CUSTOMREQUEST 10036
+#define CURLOPT_FOLLOWLOCATION 52
+#define CURLOPT_SSL_VERIFYPEER 64
+#define CURLOPT_SSL_VERIFYHOST 81
+#define CURLINFO_RESPONSE_CODE 2097154
+
+
 int add(int a, int b);
