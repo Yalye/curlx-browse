@@ -19,3 +19,25 @@ The project is in an **early development stage** and currently supports the foll
 - **Custom Headers**: Ability to add custom headers to requests.
 - **Basic SSL Handling**: Optional SSL verification bypass.
 - **Response Handling**: Captures status codes, response content, and raw response data.
+
+### Known Issues:
+- Header parsing is currently a placeholder (headers returned as an empty dictionary).
+- No cookie management functionality yet.
+- No advanced features like redirects or file uploads (multipart/form-data) have been implemented.
+  
+## Installation
+
+### Prerequisites
+
+- **Python** (>=3.7)
+- **libcurl**: Make sure the `libcurl` shared library (`libcurl.dll`, `libcurl.so`, `libcurl.dylib`) is available on your system.
+  - On **Windows**, `libcurl` may need to be installed using tools like `vcpkg` or manually downloaded from [curl's official website](https://curl.se/download.html).
+  - On **Linux**, install using `apt-get install libcurl4-openssl-dev` or equivalent for your distribution.
+  - On **macOS**, use `brew install curl`.
+
+### Installation Steps
+
+```bash
+git clone https://github.com/yourusername/curl-requests.git
+cd curl-requests
+pip install .
