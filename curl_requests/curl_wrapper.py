@@ -1,4 +1,5 @@
 from curl_requests._wrapper import lib, ffi
+from curl_requests.exceptions import Timeout, ConnectTimeout, ReadTimeout, CurlRequestException
 from urllib.parse import urlencode
 from response import CurlResponse
 
@@ -83,6 +84,11 @@ class CurlWrapper:
                 post_data = data.encode() if isinstance(data, str) else data   # Handle string data
             lib._curl_easy_setopt(curl, lib.CURLOPT_POSTFIELDS, ffi.new("char[]", post_data))
 
+        # Set timeout
+        if timeout:
+            self.setopt(curl, lib.CURLOPT_CONNECTTIMEOUT, timeout)
+            self.setopt(curl, lib.CURLOPT_TIMEOUT, timeout)
+
         # Write callback function to capture the response body
         buf = []
         @ffi.callback("size_t(char *, size_t, size_t, void *)")
@@ -109,7 +115,14 @@ class CurlWrapper:
         # Perform the request
         res = lib.curl_easy_perform(curl)
         if res != 0:
-            raise RuntimeError(f"curl failed with code {res}")
+            if res == lib.CURLE_OPERATION_TIMEDOUT:
+                raise ReadTimeout("Read timeout occurred")
+            elif res == lib.CURLE_COULDNT_CONNECT:
+                raise ConnectTimeout("Connection timed out")
+            elif res == lib.CURLE_COULDNT_RESOLVE_HOST:
+                raise ConnectTimeout("DNS resolution failed")
+            else:
+                raise CurlRequestException(f"curl failed with code {res}")
 
         # Get the response status code
         status_code = ffi.new("long *")

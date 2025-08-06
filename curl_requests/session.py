@@ -5,24 +5,21 @@ from .response import CurlResponse
 
 class CurlSession:
     def __init__(self):
-        self.headers = {}
         self.cookies = {}
-        self.timeout = 30
-        # self.user_agent = "curl_requests/0.1"
-        self.user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
+        # self.timeout = 30
+        self.default_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+            "Accept": "*/*"
+        }
 
-    def get(self, url, params=None, headers=None):
-        final_headers = self.headers.copy()
-        if headers:
-            final_headers.update(headers)
-
+    def get(self, url, params=None, headers=None, timeout=None):
+        headers = {**self.default_headers, **(headers or {})}
         if params:
             query = urlencode(params, doseq=True)
             connector = '&' if '?' in url else '?'
             url += connector + query
-
         curl = CurlWrapper()
-        res = curl.perform_request("GET", url, headers=final_headers, timeout=self.timeout)
+        res = curl.perform_request("GET", url, headers=headers, timeout=timeout)
         return res
 
     def post(self, url, data=None, headers=None):

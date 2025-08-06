@@ -88,6 +88,8 @@ void curl_mime_free(void *form);
 #define CURLOPT_SSL_VERIFYPEER 64
 #define CURLOPT_SSL_VERIFYHOST 81
 #define CURLINFO_RESPONSE_CODE 2097154
+const long CURLOPT_CONNECTTIMEOUT;
+const long CURLE_OPERATION_TIMEDOUT;
 
 
 int add(int a, int b);
