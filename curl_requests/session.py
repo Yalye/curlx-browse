@@ -12,8 +12,18 @@ class CurlSession:
             "Accept": "*/*"
         }
 
+    def get_cookie_header(self):
+        # Convert stored cookies to a Cookie header string
+        return "; ".join(f"{k}={v}" for k, v in self.cookies.items())
+
     def get(self, url, params=None, headers=None, timeout=None):
         headers = {**self.default_headers, **(headers or {})}
+
+        if self.cookies:
+            cookie_header = self.get_cookie_header()
+            headers = headers or {}
+            headers.setdefault("Cookie", cookie_header)
+
         if params:
             query = urlencode(params, doseq=True)
             connector = '&' if '?' in url else '?'

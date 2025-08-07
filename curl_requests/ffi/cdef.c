@@ -79,7 +79,7 @@ void curl_mime_free(void *form);
 #define CURLOPT_HTTPHEADER 10023
 #define CURLOPT_POSTFIELDS 10015
 #define CURLOPT_WRITEFUNCTION 20011
-#define CURLOPT_HEADERFUNCTION 20079
+//#define CURLOPT_HEADERFUNCTION 20079
 #define CURLOPT_TIMEOUT 13
 #define CURLOPT_HTTPGET 80
 #define CURLOPT_POST 47
@@ -90,6 +90,8 @@ void curl_mime_free(void *form);
 #define CURLINFO_RESPONSE_CODE 2097154
 const long CURLOPT_CONNECTTIMEOUT;
 const long CURLE_OPERATION_TIMEDOUT;
+const long CURLOPT_HEADERFUNCTION;
+const long CURLINFO_HEADERDATA;
 
 
 int add(int a, int b);

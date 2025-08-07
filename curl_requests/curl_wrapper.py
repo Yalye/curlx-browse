@@ -109,8 +109,16 @@ class CurlWrapper:
             buf.append(content)
             return size * nmemb
 
+        header_buf = []
+        @ffi.callback("size_t(char *, size_t, size_t, void *)")
+        def header_cb(ptr, size, nmemb, userdata):
+            line = ffi.string(ptr, size * nmemb).decode()
+            header_buf.append(line)
+            return size * nmemb
+
         # Set the callback for writing response data
         lib._curl_easy_setopt(curl, lib.CURLOPT_WRITEFUNCTION, write_cb)
+        lib._curl_easy_setopt(curl, lib.CURLOPT_HEADERFUNCTION, header_cb)
 
         # Perform the request
         res = lib.curl_easy_perform(curl)
@@ -128,8 +136,22 @@ class CurlWrapper:
         status_code = ffi.new("long *")
         lib.curl_easy_getinfo(curl, lib.CURLINFO_RESPONSE_CODE, status_code)
 
+        # Get the header
+        raw_headers = ffi.new("char **")
+        lib.curl_easy_getinfo(curl, lib.CURLINFO_HEADERDATA, raw_headers)
+
+
         # Clean up the curl handle
         lib.curl_easy_cleanup(curl)
+
+        # Extract cookies from Set-Cookie headers
+        cookie_dict = {}
+        for line in header_buf:
+            if line.lower().startswith("set-cookie:"):
+                parts = line[11:].split(";", 1)[0]  # Get only key=value
+                if "=" in parts:
+                    k, v = parts.strip().split("=", 1)
+                    cookie_dict[k] = v
 
         # Return a CurlResponse object with the response status, content, and other data
         resp = CurlResponse(
@@ -137,7 +159,7 @@ class CurlWrapper:
             content=b"".join(buf),  # Response content
             headers={},  # Headers (parse headers if needed)
             url=url,  # Final URL after redirects
-            cookies={},  # Add cookies handling if needed
+            cookies=cookie_dict,  # Add cookies handling if needed
             raw=None  # Optional raw data (e.g., curl handle)
         )
         return resp
