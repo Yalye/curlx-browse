@@ -66,5 +66,7 @@ def test_get_cookies():
     resp2 = s.get('https://httpbin.org/cookies')
     print("Second response content:", resp2.cookies)
 
+    s.close()
+
 if __name__ == '__main__':
     test_get_timeout()

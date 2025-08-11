@@ -89,9 +89,11 @@ void curl_mime_free(void *form);
 #define CURLOPT_SSL_VERIFYHOST 81
 #define CURLINFO_RESPONSE_CODE 2097154
 const long CURLOPT_CONNECTTIMEOUT;
+const long CURLE_COULDNT_CONNECT;
 const long CURLE_OPERATION_TIMEDOUT;
+const long CURLE_COULDNT_RESOLVE_HOST;
 const long CURLOPT_HEADERFUNCTION;
-const long CURLINFO_HEADERDATA;
+const long CURLOPT_COOKIEFILE;
 
 
 int add(int a, int b);

@@ -34,7 +34,7 @@ class CurlWrapper:
             content_type = "application/octet-stream"
         return body, content_type
 
-    def perform_request(self, method, url, headers=None, data=None, json=None, files=None, timeout=30):
+    def perform_request(self, curl, method, url, headers=None, data=None, json=None, files=None, timeout=30):
         """
         Perform an HTTP request using libcurl (via curl_cffi).
 
@@ -53,12 +53,6 @@ class CurlWrapper:
         Raises:
             RuntimeError: If curl initialization or the request fails.
         """
-
-        # Initialize a new curl handle
-        curl = lib.curl_easy_init()
-        if curl == ffi.NULL:
-            raise RuntimeError("Failed to init curl")
-
         # Set the URL for the request
         lib._curl_easy_setopt(curl, lib.CURLOPT_URL, ffi.new("char[]", url.encode()))
         lib._curl_easy_setopt(curl, lib.CURLOPT_CUSTOMREQUEST, ffi.new("char[]", method.encode()))
@@ -137,7 +131,7 @@ class CurlWrapper:
         lib.curl_easy_getinfo(curl, lib.CURLINFO_RESPONSE_CODE, status_code)
 
         # Clean up the curl handle
-        lib.curl_easy_cleanup(curl)
+        # lib.curl_easy_cleanup(curl)
 
         # Extract cookies from Set-Cookie headers
         cookie_dict = {}
