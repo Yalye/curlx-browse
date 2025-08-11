@@ -61,10 +61,10 @@ def test_get_headers():
 
 def test_get_cookies():
     resp1 = s.get('https://httpbin.org/cookies/set?testcookie=value123')
-    print("Cookies after first request:", s.cookies)
+    print("Cookies after first request:", resp1.cookies)
 
     resp2 = s.get('https://httpbin.org/cookies')
-    print("Second response content:", resp2.content.decode())
+    print("Second response content:", resp2.cookies)
 
 if __name__ == '__main__':
     test_get_timeout()

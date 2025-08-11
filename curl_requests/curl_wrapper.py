@@ -136,11 +136,6 @@ class CurlWrapper:
         status_code = ffi.new("long *")
         lib.curl_easy_getinfo(curl, lib.CURLINFO_RESPONSE_CODE, status_code)
 
-        # Get the header
-        raw_headers = ffi.new("char **")
-        lib.curl_easy_getinfo(curl, lib.CURLINFO_HEADERDATA, raw_headers)
-
-
         # Clean up the curl handle
         lib.curl_easy_cleanup(curl)
 
