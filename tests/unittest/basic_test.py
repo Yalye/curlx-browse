@@ -64,7 +64,7 @@ def test_get_cookies():
     print("Cookies after first request:", resp1.cookies)
 
     resp2 = s.get('https://httpbin.org/cookies')
-    print("Second response content:", resp2.cookies)
+    print("Second response content:", resp2.content.decode())
 
     s.close()
 

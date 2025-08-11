@@ -17,7 +17,7 @@ class CurlSession:
         # lib._curl_easy_setopt(self.curl, lib.CURLOPT_COOKIEJAR, ffi.new("char[]", b"cookies.txt"))
 
         self.cookies = {
-            "cookieee":"eeeee"
+            # "cookieee":"eeeee"
         }
         # self.timeout = 30
         self.default_headers = {
