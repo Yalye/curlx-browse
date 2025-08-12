@@ -68,5 +68,13 @@ def test_get_cookies():
 
     s.close()
 
+def test_redirection():
+    resp = s.get("https://httpbin.org/redirect/2", allow_redirects=True)
+    print(resp.status_code)  # 200
+    print(resp.content[:200])
+
+    resp_no_redirect = s.get("https://httpbin.org/redirect/2", allow_redirects=False)
+    print(resp_no_redirect.status_code)  # 302
+
 if __name__ == '__main__':
     test_get_timeout()

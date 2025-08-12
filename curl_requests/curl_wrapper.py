@@ -34,7 +34,7 @@ class CurlWrapper:
             content_type = "application/octet-stream"
         return body, content_type
 
-    def perform_request(self, curl, method, url, headers=None, data=None, json=None, files=None, timeout=30):
+    def perform_request(self, curl, method, url, headers=None, data=None, json=None, files=None, timeout=30, allow_redirects=True):
         """
         Perform an HTTP request using libcurl (via curl_cffi).
 
@@ -82,6 +82,13 @@ class CurlWrapper:
         if timeout:
             self.setopt(curl, lib.CURLOPT_CONNECTTIMEOUT, timeout)
             self.setopt(curl, lib.CURLOPT_TIMEOUT, timeout)
+
+        # Redirect support
+        if allow_redirects:
+            self.setopt(curl, lib.CURLOPT_FOLLOWLOCATION, 1)
+            self.setopt(curl, lib.CURLOPT_MAXREDIRS, 10)
+        else:
+            self.setopt(curl, lib.CURLOPT_FOLLOWLOCATION, 0)
 
         # Write callback function to capture the response body
         buf = []

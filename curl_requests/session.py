@@ -29,7 +29,7 @@ class CurlSession:
         # Convert stored cookies to a Cookie header string
         return "; ".join(f"{k}={v}" for k, v in self.cookies.items())
 
-    def get(self, url, params=None, headers=None, timeout=None):
+    def get(self, url, params=None, headers=None, timeout=None, allow_redirects=True):
         headers = {**self.default_headers, **(headers or {})}
 
         if self.cookies:
@@ -42,7 +42,7 @@ class CurlSession:
             connector = '&' if '?' in url else '?'
             url += connector + query
         curl = CurlWrapper()
-        res = curl.perform_request(self.curl,"GET", url, headers=headers, timeout=timeout)
+        res = curl.perform_request(self.curl,"GET", url, headers=headers, timeout=timeout, allow_redirects=allow_redirects)
         return res
 
     def post(self, url, data=None, headers=None):
