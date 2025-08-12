@@ -108,4 +108,8 @@ const long CURLPROXY_SOCKS5_HOSTNAME;
 
 const long CURLOPT_PROXYUSERPWD;  /* "user:password" to use with proxy. */
 
+const long CURLOPT_ACCEPT_ENCODING; /* Set the Accept-Encoding string */
+
+const long CURLOPT_POSTFIELDSIZE;  /* size of the POST input data, if strlen() is not good to use */
+
 int add(int a, int b);

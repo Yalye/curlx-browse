@@ -95,6 +95,9 @@ class CurlWrapper:
         self.setopt(curl, lib.CURLOPT_SSL_VERIFYHOST, 0)
         self.setopt(curl, lib.CURLOPT_SSL_VERIFYPEER, 0)
 
+        # Accept all encoding and unzip
+        self.setopt(curl, lib.CURLOPT_ACCEPT_ENCODING, "")
+
         # Set the request headers, if provided
         header_list = ffi.NULL
         if headers:
@@ -105,12 +108,13 @@ class CurlWrapper:
 
         # Handle POST data
         if method == "POST" and data:
-            lib._curl_easy_setopt(curl, lib.CURLOPT_POST, 1)
+            self.setopt(curl, lib.CURLOPT_POST, 1)
             if isinstance(data, dict):
                 post_data = urlencode(data).encode()   # URL encode the data if it's a dict
             else:
                 post_data = data.encode() if isinstance(data, str) else data   # Handle string data
             lib._curl_easy_setopt(curl, lib.CURLOPT_POSTFIELDS, ffi.new("char[]", post_data))
+            self.setopt(curl, lib.CURLOPT_POSTFIELDSIZE, len(post_data))
 
         # Set timeout
         if timeout:

@@ -102,13 +102,12 @@ class CurlSession:
             connector = '&' if '?' in url else '?'
             url += connector + query
 
-        try:
-            curl = CurlWrapper()
-            res = curl.perform_request(self.curl,"GET", url, headers=headers, timeout=timeout, allow_redirects=allow_redirects, proxies=proxies)
-        except Exception as e:
-            # self.close()
-            pass
+        curl = CurlWrapper()
+        res = curl.perform_request(self.curl, method=method, url=url, headers=headers, timeout=timeout, data=data,
+                                   json=json,
+                                   allow_redirects=allow_redirects, proxies=proxies)
         return res
+
 
     def get(self, url, **kwargs):
         r"""Sends a GET request. Returns :class:`Response` object.
@@ -142,14 +141,31 @@ class CurlSession:
         kwargs.setdefault("allow_redirects", False)
         return self.request("HEAD", url, **kwargs)
 
-    def post(self, url, data=None, headers=None):
-        final_headers = self.headers.copy()
-        if headers:
-            final_headers.update(headers)
+    def post(self, url, data=None, json=None, **kwargs):
+        r"""Sends a POST request. Returns :class:`Response` object.
 
-        curl = CurlWrapper()
-        res = curl.perform_request("POST", url, headers=final_headers, data=data, timeout=self.timeout)
-        return CurlResponse(res)
+        :param url: URL for the new :class:`Request` object.
+        :param data: (optional) Dictionary, list of tuples, bytes, or file-like
+            object to send in the body of the :class:`Request`.
+        :param json: (optional) json to send in the body of the :class:`Request`.
+        :param \*\*kwargs: Optional arguments that ``request`` takes.
+        :rtype: requests.Response
+        """
+        # Convert dict to x-www-form-urlencoded if data is dict
+        if data and isinstance(data, dict):
+            data = urlencode(data)
+
+        # If json is provided, encode as JSON and set header
+        if json is not None:
+            import json as jsonlib
+            data = jsonlib.dumps(json)
+            headers = kwargs.get("headers")
+            if headers is None:
+                headers = {}
+            headers["Content-Type"] = "application/json"
+
+        return self.perform_request('POST', url, data=data, json=json, **kwargs)
+
 
     def close(self):
         if self.curl != ffi.NULL:

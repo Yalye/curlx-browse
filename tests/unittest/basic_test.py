@@ -9,14 +9,6 @@ def curl_session():
     yield s
     s.close()
 
-# r1 = s.get("https://httpbin.org/get")
-# print(r1.status_code)
-# print(r1.text)
-#
-# r2 = s.post("https://httpbin.org/post", data={"username": "admin"})
-# print(r2.status_code)
-# print(r2.json())
-
 def test_get(curl_session):
     r3 = curl_session.get("https://httpbin.org/get")
     print(r3.status_code)
@@ -83,3 +75,15 @@ def test_get_with_proxies(curl_session):
     }
     resp = curl_session.get('http://ip-api.com/json', proxies=proxies)
     print(resp.content)
+
+
+def test_post_request(curl_session):
+    url = "https://httpbin.org/post"
+    data = {"name": "ChatGPT", "type": "test"}
+
+    resp = curl_session.post(url, data=data)
+
+    assert resp.status_code == 200
+    json_data = resp.json()
+    print(json_data)
+    assert json_data["form"]["name"] == "ChatGPT"
