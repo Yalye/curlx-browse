@@ -67,7 +67,8 @@ class CurlWrapper:
             userpwd = f"{parsed.username or ''}:{parsed.password or ''}"
             self.setopt(curl, lib.CURLOPT_PROXYUSERPWD, userpwd)
 
-    def perform_request(self, curl, method, url, headers=None, data=None, json=None, files=None, timeout=30, allow_redirects=True,**kwargs):
+    def perform_request(self, curl, method, url, headers=None, data=None, json=None, files=None, timeout=30,
+                        allow_redirects=True, **kwargs):
         """
         Perform an HTTP request using libcurl (via curl_cffi).
 

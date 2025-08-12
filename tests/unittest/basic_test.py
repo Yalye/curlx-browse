@@ -1,7 +1,13 @@
+import pytest
+
 from curl_requests.session import CurlSession
 from curl_requests.exceptions import ReadTimeout, ConnectTimeout, Timeout
 
-s = CurlSession()
+@pytest.fixture
+def curl_session():
+    s = CurlSession()
+    yield s
+    s.close()
 
 # r1 = s.get("https://httpbin.org/get")
 # print(r1.status_code)
@@ -11,12 +17,12 @@ s = CurlSession()
 # print(r2.status_code)
 # print(r2.json())
 
-def test_get():
-    r3 = s.get("https://httpbin.org/get")
+def test_get(curl_session):
+    r3 = curl_session.get("https://httpbin.org/get")
     print(r3.status_code)
     print(r3.json())
 
-def test_get_params():
+def test_get_params(curl_session):
     params = {
         "q": "test",
         "page": "1"
@@ -25,14 +31,14 @@ def test_get_params():
         "User-Agent": "curl-requests-test/1.0",
         "X-Test-Header": "my-value"
     }
-    r = s.get('https://httpbin.org/get', params=params, headers=headers, )
+    r = curl_session.get('https://httpbin.org/get', params=params, headers=headers, )
     print(r.status_code)
     print(r.json())
     print(r.content)
 
-def test_get_timeout():
+def test_get_timeout(curl_session):
     try:
-        r = s.get('https://httpbin.org/delay/5', timeout=1)
+        r = curl_session.get('https://httpbin.org/delay/5', timeout=1)
     except ReadTimeout as e:
         print("Server took too long to respond (read timeout)")
     except ConnectTimeout:
@@ -41,50 +47,39 @@ def test_get_timeout():
         print("General timeout error")
     except Exception as e:
         print(f"Caught exception type: {type(e)} - {e}")
-    # print(r.status_code)
-    # print(r.json())
-    # print(r.content)
 
-def test_get_headers():
-    # 仅使用默认 headers
-    r1 = s.get("https://httpbin.org/headers")
+def test_get_headers(curl_session):
+    r1 = curl_session.get("https://httpbin.org/headers")
     print("=== Default Headers ===")
     print(r1.text)
 
-    # 添加自定义 headers（部分覆盖）
-    r2 = s.get("https://httpbin.org/headers", headers={
+    r2 = curl_session.get("https://httpbin.org/headers", headers={
         "User-Agent": "Custom-UA/2.0",
         "X-Test": "yes"
     })
     print("\n=== Custom Headers ===")
     print(r2.text)
 
-def test_get_cookies():
-    resp1 = s.get('https://httpbin.org/cookies/set?testcookie=value123')
+def test_get_cookies(curl_session):
+    resp1 = curl_session.get('https://httpbin.org/cookies/set?testcookie=value123')
     print("Cookies after first request:", resp1.cookies)
 
-    resp2 = s.get('https://httpbin.org/cookies')
+    resp2 = curl_session.get('https://httpbin.org/cookies')
     print("Second response content:", resp2.content.decode())
 
-    s.close()
 
-def test_redirection():
-    resp = s.get("https://httpbin.org/redirect/2", allow_redirects=True)
+def test_redirection(curl_session):
+    resp = curl_session.get("https://httpbin.org/redirect/2", allow_redirects=True)
     print(resp.status_code)  # 200
     print(resp.content[:200])
 
-    resp_no_redirect = s.get("https://httpbin.org/redirect/2", allow_redirects=False)
+    resp_no_redirect = curl_session.get("https://httpbin.org/redirect/2", allow_redirects=False)
     print(resp_no_redirect.status_code)  # 302
 
-def test_get_with_proxies():
+def test_get_with_proxies(curl_session):
     proxies = {
         'http': 'http://',
         'https': 'http://'
     }
-    resp = s.get('http://ip-api.com/json', proxies=proxies)
+    resp = curl_session.get('http://ip-api.com/json', proxies=proxies)
     print(resp.content)
-
-
-
-if __name__ == '__main__':
-    test_get_timeout()
