@@ -76,5 +76,15 @@ def test_redirection():
     resp_no_redirect = s.get("https://httpbin.org/redirect/2", allow_redirects=False)
     print(resp_no_redirect.status_code)  # 302
 
+def test_get_with_proxies():
+    proxies = {
+        'http': 'http://',
+        'https': 'http://'
+    }
+    resp = s.get('http://ip-api.com/json', proxies=proxies)
+    print(resp.content)
+
+
+
 if __name__ == '__main__':
     test_get_timeout()

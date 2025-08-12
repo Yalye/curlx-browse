@@ -1,6 +1,6 @@
 from curl_requests._wrapper import lib, ffi
 from curl_requests.exceptions import Timeout, ConnectTimeout, ReadTimeout, CurlRequestException
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 from response import CurlResponse
 
 class CurlWrapper:
@@ -34,7 +34,40 @@ class CurlWrapper:
             content_type = "application/octet-stream"
         return body, content_type
 
-    def perform_request(self, curl, method, url, headers=None, data=None, json=None, files=None, timeout=30, allow_redirects=True):
+    def apply_proxies(self, curl, proxies, url):
+        if not proxies:
+            return
+
+        scheme = urlparse(url).scheme
+        proxy_url = proxies.get(scheme)
+        if not proxy_url:
+            return
+
+        parsed = urlparse(proxy_url)
+
+        # 代理地址
+        self.setopt(curl, lib.CURLOPT_PROXY, parsed.hostname)
+
+        # 代理端口
+        if parsed.port:
+            self.setopt(curl, lib.CURLOPT_PROXYPORT, parsed.port)
+
+        # 代理类型
+        if parsed.scheme == 'http':
+            self.setopt(curl, lib.CURLOPT_PROXYTYPE, lib.CURLPROXY_HTTP)
+        elif parsed.scheme in ('socks4', 'socks4a'):
+            self.setopt(curl, lib.CURLOPT_PROXYTYPE, lib.PROXYTYPE_SOCKS4)
+        elif parsed.scheme == 'socks5':
+            self.setopt(curl, lib.CURLOPT_PROXYTYPE, lib.PROXYTYPE_SOCKS5)
+        elif parsed.scheme == 'socks5h':
+            self.setopt(curl, lib.CURLOPT_PROXYTYPE, lib.PROXYTYPE_SOCKS5_HOSTNAME)
+
+        # 用户名密码
+        if parsed.username or parsed.password:
+            userpwd = f"{parsed.username or ''}:{parsed.password or ''}"
+            self.setopt(curl, lib.CURLOPT_PROXYUSERPWD, userpwd)
+
+    def perform_request(self, curl, method, url, headers=None, data=None, json=None, files=None, timeout=30, allow_redirects=True,**kwargs):
         """
         Perform an HTTP request using libcurl (via curl_cffi).
 
@@ -89,6 +122,9 @@ class CurlWrapper:
             self.setopt(curl, lib.CURLOPT_MAXREDIRS, 10)
         else:
             self.setopt(curl, lib.CURLOPT_FOLLOWLOCATION, 0)
+
+        # Apply proxies
+        self.apply_proxies(curl, kwargs.get("proxies"), url)
 
         # Write callback function to capture the response body
         buf = []

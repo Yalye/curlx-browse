@@ -19,6 +19,9 @@ class CurlSession:
         self.cookies = {
             # "cookieee":"eeeee"
         }
+
+        self.proxies = None
+
         # self.timeout = 30
         self.default_headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
@@ -29,7 +32,7 @@ class CurlSession:
         # Convert stored cookies to a Cookie header string
         return "; ".join(f"{k}={v}" for k, v in self.cookies.items())
 
-    def get(self, url, params=None, headers=None, timeout=None, allow_redirects=True):
+    def get(self, url, params=None, proxies=None, headers=None, timeout=None, allow_redirects=True):
         headers = {**self.default_headers, **(headers or {})}
 
         if self.cookies:
@@ -42,7 +45,7 @@ class CurlSession:
             connector = '&' if '?' in url else '?'
             url += connector + query
         curl = CurlWrapper()
-        res = curl.perform_request(self.curl,"GET", url, headers=headers, timeout=timeout, allow_redirects=allow_redirects)
+        res = curl.perform_request(self.curl,"GET", url, headers=headers, timeout=timeout, allow_redirects=allow_redirects, proxies=proxies)
         return res
 
     def post(self, url, data=None, headers=None):

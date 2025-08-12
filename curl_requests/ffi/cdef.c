@@ -96,5 +96,16 @@ const long CURLOPT_COOKIEFILE;
 const long CURLOPT_FOLLOWLOCATION;
 const long CURLOPT_MAXREDIRS;
 
+const long CURLOPT_PROXY;   /* Name of proxy to use. */
+const long CURLOPT_PROXYPORT;  /* Port of the proxy, can be set in the proxy string as well with:"[host]:[port]" */
+const long CURLOPT_PROXYTYPE;  /* indicates type of proxy. accepted values are CURLPROXY_HTTP (default),
+     CURLPROXY_HTTPS, CURLPROXY_SOCKS4, CURLPROXY_SOCKS4A and
+     CURLPROXY_SOCKS5. */
+const long CURLPROXY_HTTP;
+const long CURLPROXY_SOCKS4;
+const long CURLPROXY_SOCKS5;
+const long CURLPROXY_SOCKS5_HOSTNAME;
+
+const long CURLOPT_PROXYUSERPWD;  /* "user:password" to use with proxy. */
 
 int add(int a, int b);
