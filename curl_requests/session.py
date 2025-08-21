@@ -154,15 +154,16 @@ class CurlSession:
         # Convert dict to x-www-form-urlencoded if data is dict
         if data and isinstance(data, dict):
             data = urlencode(data)
+            self.default_headers["Content-Type"] = "application/x-www-form-urlencoded"
 
         # If json is provided, encode as JSON and set header
         if json is not None:
             import json as jsonlib
-            data = jsonlib.dumps(json)
-            headers = kwargs.get("headers")
-            if headers is None:
-                headers = {}
-            headers["Content-Type"] = "application/json"
+            data = jsonlib.dumps(json).encode('UTF-8')
+            # headers = kwargs.get("headers")
+            # if headers is None:
+            #     headers = {}
+            self.default_headers["Content-Type"] = "application/json"
 
         return self.perform_request('POST', url, data=data, json=json, **kwargs)
 

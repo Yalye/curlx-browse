@@ -4,18 +4,29 @@ from urllib.parse import urlencode, urlparse
 from response import CurlResponse
 
 class CurlWrapper:
+
+    def __init__(self):
+        self._buffers = []
+
     def setopt(self, curl, option, value):
         if isinstance(value, str):
-            val = ffi.new("char[]", value.encode())
+            buf = ffi.new("char[]", value.encode())
+            self._buffers.append(buf)
+            lib._curl_easy_setopt(curl, option, buf)
         elif isinstance(value, bytes):
-            val = ffi.new("char[]", value)
+            buf = ffi.new("char[]", value)
+            self._buffers.append(buf)
+            lib._curl_easy_setopt(curl, option, buf)
         elif isinstance(value, int):
             val = ffi.new("long *", value)
+            lib._curl_easy_setopt(curl, option, val)
         elif value is None:
-            val = ffi.NULL
+            lib._curl_easy_setopt(curl, option, ffi.NULL)
         else:
-            val = value  # assume already cdata
-        lib._curl_easy_setopt(curl, option, val)
+            # assume already cdata
+            self._buffers.append(value)
+            lib._curl_easy_setopt(curl, option, value)
+
 
     def prepare_body(self, data=None, json=None, files=None):
         if json is not None:
@@ -87,6 +98,8 @@ class CurlWrapper:
         Raises:
             RuntimeError: If curl initialization or the request fails.
         """
+        self._buffers = []
+
         # Set the URL for the request
         lib._curl_easy_setopt(curl, lib.CURLOPT_URL, ffi.new("char[]", url.encode()))
         lib._curl_easy_setopt(curl, lib.CURLOPT_CUSTOMREQUEST, ffi.new("char[]", method.encode()))
@@ -113,7 +126,7 @@ class CurlWrapper:
                 post_data = urlencode(data).encode()   # URL encode the data if it's a dict
             else:
                 post_data = data.encode() if isinstance(data, str) else data   # Handle string data
-            lib._curl_easy_setopt(curl, lib.CURLOPT_POSTFIELDS, ffi.new("char[]", post_data))
+            self.setopt(curl, lib.CURLOPT_POSTFIELDS, post_data)
             self.setopt(curl, lib.CURLOPT_POSTFIELDSIZE, len(post_data))
 
         # Set timeout
@@ -189,6 +202,8 @@ class CurlWrapper:
                 if "=" in parts:
                     k, v = parts.strip().split("=", 1)
                     cookie_dict[k] = v
+
+        self._buffers = []
 
         # Return a CurlResponse object with the response status, content, and other data
         resp = CurlResponse(

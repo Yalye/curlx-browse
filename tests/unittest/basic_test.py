@@ -79,11 +79,11 @@ def test_get_with_proxies(curl_session):
 
 def test_post_request(curl_session):
     url = "https://httpbin.org/post"
-    data = {"name": "ChatGPT", "type": "test"}
+    json_data = {"name": "ChatGPT", "type": "test"}
 
-    resp = curl_session.post(url, data=data)
+    resp = curl_session.post(url, json=json_data)
 
     assert resp.status_code == 200
-    json_data = resp.json()
-    print(json_data)
-    assert json_data["form"]["name"] == "ChatGPT"
+    json_response = resp.json()
+    print(json_response)
+    assert json_response["json"]["type"] == "test"
