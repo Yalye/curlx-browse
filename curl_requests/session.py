@@ -104,7 +104,7 @@ class CurlSession:
 
         curl = CurlWrapper()
         res = curl.perform_request(self.curl, method=method, url=url, headers=headers, timeout=timeout, data=data,
-                                   json=json,
+                                   json=json, files=files,
                                    allow_redirects=allow_redirects, proxies=proxies)
         return res
 
@@ -164,6 +164,9 @@ class CurlSession:
             # if headers is None:
             #     headers = {}
             self.default_headers["Content-Type"] = "application/json"
+
+        # if files:
+        #     self.default_headers["Content-Type"] = "multipart/form-data"
 
         return self.perform_request('POST', url, data=data, json=json, **kwargs)
 

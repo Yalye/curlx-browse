@@ -77,7 +77,7 @@ def test_get_with_proxies(curl_session):
     print(resp.content)
 
 
-def test_post_request(curl_session):
+def test_post_json(curl_session):
     url = "https://httpbin.org/post"
     json_data = {"name": "ChatGPT", "type": "test"}
 
@@ -87,3 +87,33 @@ def test_post_request(curl_session):
     json_response = resp.json()
     print(json_response)
     assert json_response["json"]["type"] == "test"
+
+def test_post_data(curl_session):
+    url = "https://httpbin.org/post"
+    data = {"name": "ChatGPT", "type": "test"}
+
+    resp = curl_session.post(url, data=data)
+
+    assert resp.status_code == 200
+    json_response = resp.json()
+    print(json_response)
+    assert json_response["form"]["type"] == "test"
+
+def test_post_bytes(curl_session):
+    url = "https://httpbin.org/post"
+    data = b"\x00\x01\x02binary"
+
+    resp = curl_session.post(url, data=data)
+
+    assert resp.status_code == 200
+    json_response = resp.json()
+    print(json_response)
+
+def test_post_file(curl_session):
+    url = "https://httpbin.org/post"
+    files = {"file1": "C:\\Users\\admin\\Desktop\\a.txt"}  # 上传本地文件
+    resp = curl_session.post(url, files=files)
+
+    assert resp.status_code == 200
+    json_response = resp.json()
+    print(json_response)

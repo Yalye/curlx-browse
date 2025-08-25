@@ -120,14 +120,24 @@ class CurlWrapper:
             lib._curl_easy_setopt(curl, lib.CURLOPT_HTTPHEADER, header_list)
 
         # Handle POST data
-        if method == "POST" and data:
-            self.setopt(curl, lib.CURLOPT_POST, 1)
-            if isinstance(data, dict):
-                post_data = urlencode(data).encode()   # URL encode the data if it's a dict
-            else:
-                post_data = data.encode() if isinstance(data, str) else data   # Handle string data
-            self.setopt(curl, lib.CURLOPT_POSTFIELDS, post_data)
-            self.setopt(curl, lib.CURLOPT_POSTFIELDSIZE, len(post_data))
+        mime = None
+        if method == "POST":
+            if files:
+                # multipart/form-data
+                mime = lib.curl_mime_init(curl)
+                for field_name, file_path in files.items():
+                    part = lib.curl_mime_addpart(mime)
+                    lib.curl_mime_name(part, field_name.encode())
+                    lib.curl_mime_filedata(part, file_path.encode())
+                lib._curl_easy_setopt(curl, lib.CURLOPT_MIMEPOST, mime)
+            elif data:
+                self.setopt(curl, lib.CURLOPT_POST, 1)
+                if isinstance(data, dict):
+                    post_data = urlencode(data).encode()   # URL encode the data if it's a dict
+                else:
+                    post_data = data.encode() if isinstance(data, str) else data   # Handle string data
+                self.setopt(curl, lib.CURLOPT_POSTFIELDS, post_data)
+                self.setopt(curl, lib.CURLOPT_POSTFIELDSIZE, len(post_data))
 
         # Set timeout
         if timeout:
@@ -193,6 +203,9 @@ class CurlWrapper:
 
         # Clean up the curl handle
         # lib.curl_easy_cleanup(curl)
+
+        if mime:
+            lib.curl_mime_free(mime)
 
         # Extract cookies from Set-Cookie headers
         cookie_dict = {}
