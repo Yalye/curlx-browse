@@ -104,7 +104,7 @@ ffi = FFI()
 root_dir = Path(__file__).parent
 
 ffi.set_source(
-    "curl_requests._wrapper",
+    "wrapper._wrapper",
     '#include "easy_set.h"',
     # FIXME from `curl-impersonate`
     libraries=get_curl_libraries(),

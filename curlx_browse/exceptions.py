@@ -1,7 +1,7 @@
-# curl_requests/exceptions.py
+# curlx_browse/exceptions.py
 
 class CurlRequestException(Exception):
-    """Base exception for curl_requests"""
+    """Base exception for curlx_browse"""
     pass
 
 class Timeout(CurlRequestException):

@@ -1,7 +1,7 @@
 import pytest
 
-from curl_requests.session import CurlSession
-from curl_requests.exceptions import ReadTimeout, ConnectTimeout, Timeout
+from curlx_browse.session import CurlSession
+from curlx_browse.exceptions import ReadTimeout, ConnectTimeout, Timeout
 
 @pytest.fixture
 def curl_session():
@@ -20,7 +20,7 @@ def test_get_params(curl_session):
         "page": "1"
     }
     headers = {
-        "User-Agent": "curl-requests-test/1.0",
+        "User-Agent": "test/1.0",
         "X-Test-Header": "my-value"
     }
     r = curl_session.get('https://httpbin.org/get', params=params, headers=headers, )
@@ -111,7 +111,7 @@ def test_post_bytes(curl_session):
 
 def test_post_file(curl_session):
     url = "https://httpbin.org/post"
-    files = {"file1": "C:\\Users\\admin\\Desktop\\a.txt"}  # 上传本地文件
+    files = {"file1": "C:\\Users\\admin\\Desktop\\a.txt"}
     resp = curl_session.post(url, files=files)
 
     assert resp.status_code == 200

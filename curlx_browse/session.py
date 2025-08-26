@@ -1,5 +1,5 @@
 from urllib.parse import urlencode
-from curl_requests._wrapper import lib, ffi
+from wrapper._wrapper import lib, ffi
 from .curl_wrapper import CurlWrapper
 from .response import CurlResponse
 
@@ -160,13 +160,7 @@ class CurlSession:
         if json is not None:
             import json as jsonlib
             data = jsonlib.dumps(json).encode('UTF-8')
-            # headers = kwargs.get("headers")
-            # if headers is None:
-            #     headers = {}
             self.default_headers["Content-Type"] = "application/json"
-
-        # if files:
-        #     self.default_headers["Content-Type"] = "multipart/form-data"
 
         return self.perform_request('POST', url, data=data, json=json, **kwargs)
 
@@ -175,3 +169,5 @@ class CurlSession:
         if self.curl != ffi.NULL:
             lib.curl_easy_cleanup(self.curl)
             self.curl = ffi.NULL
+
+

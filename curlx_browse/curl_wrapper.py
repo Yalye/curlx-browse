@@ -1,5 +1,5 @@
-from curl_requests._wrapper import lib, ffi
-from curl_requests.exceptions import Timeout, ConnectTimeout, ReadTimeout, CurlRequestException
+from wrapper._wrapper import lib, ffi
+from .exceptions import Timeout, ConnectTimeout, ReadTimeout, CurlRequestException
 from urllib.parse import urlencode, urlparse
 from response import CurlResponse
 
