@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "curlx-browse"
+version = "0.1.0"
+description = "A requests-like HTTP client powered by libcurl with browser integration."
+authors = [
+    { name="Yalye", email="y.yalye.y@gmail.com" }
+]
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+
+dependencies = [
+    "cffi>=1.15.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["curlx_browse*"]
+
+[tool.setuptools.package-data]
+"curlx_browse.wrapper" = ["_wrapper.*"]
+
+[project.urls]
+Homepage = "https://github.com/Yalye/curlx-browse"
+Repository = "https://github.com/Yalye/curlx-browse"
+Issues = "https://github.com/Yalye/curlx-browse/issues"

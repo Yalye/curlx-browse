@@ -1,0 +1,8 @@
+certifi==2025.8.3
+cffi==2.0.0b1
+colorama==0.4.6
+iniconfig==2.1.0
+packaging==25.0
+pycparser==2.22
+pytest==8.4.1
+setuptools==80.9.0
